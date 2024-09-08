@@ -26,11 +26,11 @@ public abstract class AbstractBeanFactory implements BeanFactory {
 		if (beanDefinition == null) {
 			throw new IllegalArgumentException("No bean named " + name + " is defined");
 		}
-		Object bean = beanDefinition.getBean();
+		Object bean = beanDefinition.getBean();  // 解决循环依赖: 此时拿到的 Bean 可能是已经实例化 + 但还没有注入属性的 Bean, 它被提前塞入 BeanDefinition 中了
 		if (bean == null) {
-			bean = doCreateBean(beanDefinition);
+			bean = doCreateBean(beanDefinition); // 解决循环依赖: 创建 Bean 的过程中, 会将已经实例化 + 但还没有注入属性的 Bean 提前塞进 BeanDefinition 中, 解决循环依赖
             bean = initializeBean(bean, name);
-            beanDefinition.setBean(bean);
+            beanDefinition.setBean(bean);        // AOP 创建出的代理 Bean 需要重新赋值给 BeanDefinition.Bean
 		}
 		return bean;
 	}
@@ -64,9 +64,9 @@ public abstract class AbstractBeanFactory implements BeanFactory {
 	}
 
 	protected Object doCreateBean(BeanDefinition beanDefinition) throws Exception {
-		Object bean = createBeanInstance(beanDefinition);
-		beanDefinition.setBean(bean);
-		applyPropertyValues(bean, beanDefinition);
+		Object bean = createBeanInstance(beanDefinition); // 1、创建 Bean
+		beanDefinition.setBean(bean);                     // 2、将已经实例化 + 但还没有注入属性的 Bean 提前塞进 BeanDefinition 中, 解决循环依赖
+		applyPropertyValues(bean, beanDefinition);        // 3、为 Bean 注入属性
 		return bean;
 	}
 
