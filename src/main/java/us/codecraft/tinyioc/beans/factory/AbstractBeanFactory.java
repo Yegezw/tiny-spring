@@ -30,6 +30,7 @@ public abstract class AbstractBeanFactory implements BeanFactory {
 		if (bean == null) {
 			bean = doCreateBean(beanDefinition);
             bean = initializeBean(bean, name);
+			beanDefinition.setBean(bean); // AOP 创建出的代理 Bean 需要重新赋值给 BeanDefinition.Bean
 		}
 		return bean;
 	}
